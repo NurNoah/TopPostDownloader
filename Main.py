@@ -29,29 +29,38 @@ def save_downloaded_posts():
 # Initialisiere die Liste mit bereits heruntergeladenen Beiträgen
 downloaded_posts = load_downloaded_posts()
 
+# Stelle sicher, dass der "content" Ordner existiert
+if not os.path.exists('content'):
+    os.makedirs('content')
+
 def download_top_post(subreddit_name):
     subreddit = reddit.subreddit(subreddit_name)
     
     for post in subreddit.new():
         if post.url not in downloaded_posts:
             url = post.url
-            filename = url.split('/')[-1]
+            filename = os.path.join('content', url.split('/')[-1])
             
-            response = requests.get(url)
-            
-            if response.status_code == 200:
-                with open(filename, 'wb') as f:
-                    f.write(response.content)
-                print(f'Downloaded {filename}')
-                downloaded_posts.append(url)
-                save_downloaded_posts()  # Speichern der Liste
+            # Überprüfen, ob die URL auf ein Bild verweist
+            if url.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                response = requests.get(url)
+                
+                if response.status_code == 200:
+                    with open(filename, 'wb') as f:
+                        f.write(response.content)
+                    print(f'Downloaded {filename}')
+                    downloaded_posts.append(url)
+                    save_downloaded_posts()  # Speichern der Liste
+                else:
+                    print(f'Failed to download the post: {url}')
             else:
-                print('Failed to download the post')
-            
+                print(f'URL is not a valid image: {url}')
         else:
             print(f'Post already downloaded: {post.url}')
 
+# Hier kannst du das Subreddit anpassen
 download_top_post('OkBrudiMongo')
+
 # Funktion einmal am Tag ausführen
 #schedule.every().day.at("10:00").do(download_top_post, subreddit_name='OkBrudiMongo')
 
