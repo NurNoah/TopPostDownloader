@@ -51,6 +51,7 @@ def download_top_post(subreddit_name):
                     print(f'Downloaded {filename}')
                     downloaded_posts.append(url)
                     save_downloaded_posts()  # Speichern der Liste
+                    break
                 else:
                     print(f'Failed to download the post: {url}')
             else:
